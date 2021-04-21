@@ -13,7 +13,6 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -53,25 +52,25 @@ var (
 // - caov1beta1.MachineAutoscalerList
 // - caov1.ClusterAutoscalerList
 // - batchv1.JobList
-func DeleteObjectsByLabels(c runtimeclient.Client, labels map[string]string, list runtime.Object) error {
+func DeleteObjectsByLabels(c runtimeclient.Client, labels map[string]string, list runtimeclient.ObjectList) error {
 	if err := c.List(context.Background(), list, runtimeclient.MatchingLabels(labels)); err != nil {
 		return fmt.Errorf("Unable to list objects: %w", err)
 	}
 
 	// TODO(jchaloup): find a way how to list the items independent of a kind
-	var objs []runtime.Object
+	var objs []runtimeclient.Object
 	switch d := list.(type) {
 	case *caov1beta1.MachineAutoscalerList:
 		for _, item := range d.Items {
-			objs = append(objs, runtime.Object(&item))
+			objs = append(objs, runtimeclient.Object(&item))
 		}
 	case *caov1.ClusterAutoscalerList:
 		for _, item := range d.Items {
-			objs = append(objs, runtime.Object(&item))
+			objs = append(objs, runtimeclient.Object(&item))
 		}
 	case *batchv1.JobList:
 		for _, item := range d.Items {
-			objs = append(objs, runtime.Object(&item))
+			objs = append(objs, runtimeclient.Object(&item))
 		}
 
 	default:
